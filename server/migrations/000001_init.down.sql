@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS admins;
+DROP TABLE IF EXISTS invocations;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS device_tokens;
+DROP TABLE IF EXISTS devices;

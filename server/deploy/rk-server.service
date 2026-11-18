@@ -1,0 +1,32 @@
+# rk-server 的 systemd 单元。
+#
+#   /opt/rk-server/rk-server        二进制
+#   /opt/rk-server/config.yaml      配置，和程序放在同一目录（含数据库密码，chown root:rk-server，chmod 640）
+#   /var/lib/rk-server/releases/    OTA 安装包（自动创建）
+#
+# 先建运行用户：useradd -r -s /usr/sbin/nologin rk-server
+
+[Unit]
+Description=ResidentKit server (device gateway + console)
+After=network-online.target mysqld.service
+Wants=network-online.target
+
+[Service]
+User=rk-server
+Group=rk-server
+ExecStart=/opt/rk-server/rk-server
+Restart=on-failure
+RestartSec=3
+StateDirectory=rk-server
+StateDirectoryMode=0700
+UMask=0077
+LimitNOFILE=65536
+
+# 基本加固：不能提权，系统目录只读
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

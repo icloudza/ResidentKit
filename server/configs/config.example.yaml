@@ -1,0 +1,65 @@
+# rk-server 配置示例。复制为 config.yaml，填好 database 的账号密码和 auth 的两个密钥即可启动。
+# 含密码，权限设为仅服务用户可读。每一项都可用环境变量覆盖，如 RK_DATABASE_PASSWORD、RK_AUTH_JWT_KEY。
+
+log:
+  level: info          # debug | info | warn | error
+  format: json         # json | console
+
+gateway:               # 服务端口：设备连接、开放 API、控制台都走这一个端口
+  listen: 127.0.0.1:8765   # 前面由反代（Nginx 等）负责域名和 HTTPS；设备直连时改成 :8765 并填下面的证书
+  tls_cert: ""             # 证书文件路径，有 Nginx 时留空
+  tls_key: ""
+  trusted_proxies: [127.0.0.1, "::1"]   # 反代地址，按它转发的 X-Real-IP 取设备真实 IP
+  path: /rk
+  idle_timeout: 120s   # 无任何数据即断开（设备每 25s 心跳）
+  handshake_timeout: 10s
+  max_message_bytes: 65536
+  max_connections: 1024
+  max_per_ip: 8
+  ban_after: 5         # 窗口内鉴权失败次数
+  ban_window: 10m
+  ban_for: 30m
+  public_url: ""       # 外部访问地址，如 https://rk.example.com；控制台据此显示开放 API 地址（/open/v1）
+
+console:               # 控制台（和设备共用 gateway.listen 端口）
+  trusted_origins: []
+
+database:
+  host: 127.0.0.1
+  port: 3306
+  user: rk
+  password: ""
+  name: residentkit    # 数据库名
+  max_open_conns: 20
+  max_idle_conns: 5
+  conn_max_lifetime: 30m
+
+auth:
+  jwt_key: ""          # 至少 32 个字符：openssl rand -hex 32
+  totp_key: ""         # 同上；设好后不要再改，否则已绑定的两步验证失效
+  access_ttl: 15m
+  refresh_ttl: 168h
+  max_failures: 5      # 连续失败次数，超过后锁定
+  lock_for: 15m
+  login_rate_per_min: 10
+  api_rate_per_min: 600
+
+invoke:
+  default_ttl: 10m     # 设备离线时指令排队时长
+  wait_max: 30s        # 同步等待结果的上限（控制台与开放 API）
+
+retain:
+  events: 720h         # 30 天
+  invocations: 2160h   # 90 天
+  audit: 0             # 0 = 永久保留（审计表只增不改）；要按期清理需给运行账号加 audit_logs 的 DELETE 权限
+
+release:               # OTA 发布
+  public_key: ""       # rk-release pubkey 的输出；为空时不能上传版本（私钥只放发布者本机）
+  # dir: /www/wwwroot/rk-server/data/releases   # 默认在配置文件旁边的 data/releases
+
+repo:                  # 软件源：新机器在 Sileo 里添加安装链接即可安装（已装设备走 OTA）
+  enabled: false       # 打开后在控制台「发布」页生成安装链接；关闭时 /repo/ 返回 404
+  label: ResidentKit   # Sileo 里显示的源名称
+
+enroll:                # 设备接入
+  app_scheme: residentkit   # App 注册的 URL scheme：控制台「添加设备」二维码用它打开 App，与 App 的 Info.plist 一致

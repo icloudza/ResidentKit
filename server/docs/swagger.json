@@ -1,0 +1,4238 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "ResidentKit 控制台 API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/api-calls": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "调用记录（新到旧），可按密钥、设备、状态、时间筛选",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "密钥 ID",
+                        "name": "key_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "逗号分隔：pending,sent,succeeded,failed,expired,lost",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d | all，默认 24h",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.APICallPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "API 密钥列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.APIKey"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "创建 API 密钥（需再次输入密码，明文只返回这一次）",
+                "parameters": [
+                    {
+                        "description": "名称、权限、范围",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAPIKeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.IssuedAPIKey"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/commands": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "全部设备开放给开放 API 的命令（每个命令一个接口），含参数与返回字段",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.CommandSpec"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/info": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "开放 API 的地址与服务器证书指纹",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.OpenAPIInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/openapi.json": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "开放 API 的 OpenAPI 3 规范（与 /open/v1/openapi.json 相同），供控制台下载",
+                "responses": {}
+            }
+        },
+        "/api-keys/stats": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "近 24 小时调用量、成功率、耗时、走势、热门命令与每个密钥的走势",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.APIStats"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/try": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "用给定的密钥调用一次开放 API（服务端在进程内转发，结果原样返回）",
+                "parameters": [
+                    {
+                        "description": "密钥、方法、路径与请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.APITryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.APITryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "编辑密钥的名称、权限、设备范围、IP 白名单与有效期（需再次输入密码，立即生效）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "密钥 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "新的设置",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAPIKeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.APIKey"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "删除已吊销的 API 密钥",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "密钥 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/api-keys/{id}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "开放 API"
+                ],
+                "summary": "吊销 API 密钥（立即生效）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "密钥 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/audit-logs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "审计"
+                ],
+                "summary": "审计日志",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码，从 1 开始",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认 20，最大 200",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AuditLogPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "认证"
+                ],
+                "summary": "登录，返回访问令牌；刷新令牌写入 HttpOnly Cookie",
+                "parameters": [
+                    {
+                        "description": "账号",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "作废刷新令牌",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "当前登录的管理员",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Admin"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/password": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "修改密码，其他会话随之失效",
+                "parameters": [
+                    {
+                        "description": "新旧密码",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "认证"
+                ],
+                "summary": "用 Cookie 中的刷新令牌换新的访问令牌（刷新令牌同时轮换）",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/totp/disable": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "用验证码确认并关闭两步验证",
+                "parameters": [
+                    {
+                        "description": "验证码",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TOTPCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/totp/enable": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "用验证码确认并启用两步验证",
+                "parameters": [
+                    {
+                        "description": "验证码",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TOTPCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/totp/setup": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "生成两步验证密钥（需再调用 enable 确认）",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TOTPSetupResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/username": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "修改用户名（需当前密码，开启两步验证时还需验证码）",
+                "parameters": [
+                    {
+                        "description": "新用户名与当前密码",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeUsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Admin"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/dashboard/summary": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "总览"
+                ],
+                "summary": "总览：设备、事件、指令与网关的 24 小时统计",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Summary"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/device-updates/{id}/retry": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "重试一台设备失败的更新",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "更新记录 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "全部设备，在线的在前",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Device"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "设备详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Device"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "删除离线设备：吊销其令牌，并删除它的指令、事件、配置与更新记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "修改设备别名",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "别名",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateDeviceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}/activity": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "设备活动概览：指令与事件按时间分桶",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "24h（默认，按小时）| 7d | 30d（按天）",
+                        "name": "range",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "浏览器时区相对 UTC 的分钟数，如东八区 480",
+                        "name": "tz",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceActivity"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}/commands": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "设备开放的远程命令（名称、图标、参数与返回字段取自设备上报的说明，不含系统内部命令）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.CommandSpec"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}/config": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "设备的可配置项、期望配置与同步状态",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceConfig"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "保存设备配置（整体替换，未给出的项恢复默认）并立即下发",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "{模块: {key: 值}}",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceConfig"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}/invocations": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "指令"
+                ],
+                "summary": "下发远程指令；设备离线时排队，可选同步等待结果",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "指令",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.InvokeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Invocation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/devices/{id}/update": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "设备当前版本、可更新到的版本与更新历史",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.DeviceUpdateInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/enroll-tickets": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "「添加设备」：二维码所需的服务器信息与全部接入码",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.EnrollTicketOverview"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "生成接入码（明文只返回这一次）；设备扫码后带着它申请接入会直接批准",
+                "parameters": [
+                    {
+                        "description": "名称、有效期（分钟）、可用次数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateEnrollTicketRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.IssuedEnrollTicket"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/enroll-tickets/{id}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "吊销接入码（立即失效，已接入的设备不受影响）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "接入码 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/enrollments": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "待批准的设备接入申请",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Enrollment"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/enrollments/{id}/{action}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "设备"
+                ],
+                "summary": "同意（approve）或拒绝（reject）设备接入",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "申请 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "approve | reject",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/events": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "事件"
+                ],
+                "summary": "设备上报的事件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "事件类型",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "时间范围：1h、24h、7d、30d，默认不限",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "级别，逗号分隔，如 warning,error",
+                        "name": "level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，从 1 开始",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认 20，最大 200",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.EventPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/events/types": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "事件"
+                ],
+                "summary": "各事件类型的数量（since 支持 1h、24h、7d，默认 24h）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "时间范围",
+                        "name": "since",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.TypeCount"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/invocations": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "指令"
+                ],
+                "summary": "指令记录（device_id 为空则全部）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "设备 ID",
+                        "name": "device_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "状态，逗号分隔，如 failed,lost",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "1h | 24h | 7d | 30d | all（默认全部）",
+                        "name": "since",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码，从 1 开始",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页条数，默认 20，最大 200",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.InvocationPage"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/invocations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "指令"
+                ],
+                "summary": "单条指令",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "指令 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Invocation"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/releases": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "全部版本，新到旧，附各更新状态的设备数",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.Release"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "multipart 字段顺序：password、totp_code、notes，最后是文件 bundle。",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "上传发布包（rk-release sign 生成的 .rkrel.zip，需再次输入密码）",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "当前密码",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "两步验证码",
+                        "name": "totp_code",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "更新说明",
+                        "name": "notes",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "1 表示同步到软件源（源里改为提供这个版本）",
+                        "name": "repo",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "发布包 .rkrel.zip",
+                        "name": "bundle",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Release"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/releases/config": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "是否已配置发布公钥",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.OTAConfig"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/releases/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "版本详情：灰度计划与每台设备的更新状态",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "版本 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.ReleaseDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/releases/{id}/repo": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "同步到软件源或从源里移除（源里提供已同步、未撤回的最新版本）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "版本 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "是否同步",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetReleaseRepoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/releases/{id}/rollouts": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "创建灰度计划：全部设备，或指定设备（先试几台）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "版本 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "目标",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateRolloutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.Rollout"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/releases/{id}/withdraw": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "撤回版本：停止相关灰度计划",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "版本 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/repo-links": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "软件源是否开启、当前提供的版本与全部安装链接",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RepoOverview"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "生成安装链接（需再次输入密码，完整地址只返回这一次）",
+                "parameters": [
+                    {
+                        "description": "名称、有效期、下载次数上限与当前密码",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateRepoLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.IssuedRepoLink"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/repo-links/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "修改名称、有效期、下载次数上限（过期或用完的链接改后可重新生效）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "链接 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "名称、有效期（不填不变）、下载次数上限",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateRepoLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RepoLink"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "删除已吊销的安装链接及其下载记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "链接 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/repo-links/{id}/downloads": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "经该链接下载安装包的记录（最近 100 条）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "链接 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.RepoDownload"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/repo-links/{id}/reveal": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "再次查看安装链接的地址（旧版本生成的链接无法查看）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "链接 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.RepoLinkPath"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/repo-links/{id}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "吊销安装链接（立即失效，已添加该源的 Sileo 刷新会失败）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "链接 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/rollouts/{id}/{action}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "发布"
+                ],
+                "summary": "暂停 / 继续 / 取消灰度计划",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "计划 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "pause | resume | cancel",
+                        "name": "action",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/setup": {
+            "post": {
+                "tags": [
+                    "初始化"
+                ],
+                "summary": "凭初始化码创建第一个管理员并登录（初始化码见服务日志）",
+                "parameters": [
+                    {
+                        "description": "初始化信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/setup/status": {
+            "get": {
+                "tags": [
+                    "初始化"
+                ],
+                "summary": "是否需要首次初始化（尚无管理员）",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.SetupStatus"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/stream": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "总览"
+                ],
+                "summary": "SSE 实时推送：设备上下线、新事件、指令状态",
+                "responses": {}
+            }
+        },
+        "/tokens": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "令牌"
+                ],
+                "summary": "设备令牌（设备申请接入、管理员同意后自动签发）",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Body"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.DeviceToken"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/tokens/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "令牌"
+                ],
+                "summary": "删除已吊销的设备令牌（未吊销的须先吊销）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "令牌 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        },
+        "/tokens/{id}/revoke": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "令牌"
+                ],
+                "summary": "吊销设备令牌（已连接的设备在下次重连时被拒）",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "令牌 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Body"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.APICallPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Invocation"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.APICommandCount": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "module": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.APIHour": {
+            "type": "object",
+            "properties": {
+                "bad": {
+                    "description": "失败 / 结果未知 / 过期",
+                    "type": "integer"
+                },
+                "hour": {
+                    "type": "string"
+                },
+                "ok": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.APIKey": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key_prefix": {
+                    "type": "string"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "last_used_ip": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dto.APIKeyStat": {
+            "type": "object",
+            "properties": {
+                "calls": {
+                    "type": "integer"
+                },
+                "hourly": {
+                    "description": "近 24 小时每小时调用数",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ok": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.APIStats": {
+            "type": "object",
+            "properties": {
+                "active_keys": {
+                    "type": "integer"
+                },
+                "avg_ms": {
+                    "type": "number"
+                },
+                "calls": {
+                    "type": "integer"
+                },
+                "calls_prev": {
+                    "description": "再往前 24 小时，用于环比",
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                },
+                "hourly": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.APIHour"
+                    }
+                },
+                "lost": {
+                    "description": "结果未知 + 过期",
+                    "type": "integer"
+                },
+                "p95_ms": {
+                    "type": "number"
+                },
+                "per_key": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/dto.APIKeyStat"
+                    }
+                },
+                "running": {
+                    "type": "integer"
+                },
+                "succeeded": {
+                    "type": "integer"
+                },
+                "top": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.APICommandCount"
+                    }
+                },
+                "used_keys": {
+                    "description": "24 小时内有调用的密钥",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.APITryRequest": {
+            "type": "object",
+            "required": [
+                "method",
+                "path"
+            ],
+            "properties": {
+                "body": {
+                    "type": "object"
+                },
+                "idempotency_key": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "key": {
+                    "description": "或直接填明文",
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "key_id": {
+                    "description": "选择已创建的密钥（优先）",
+                    "type": "integer"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "GET",
+                        "POST"
+                    ]
+                },
+                "path": {
+                    "description": "/open/v1/… 下的路径与查询",
+                    "type": "string",
+                    "maxLength": 512
+                }
+            }
+        },
+        "dto.APITryResponse": {
+            "type": "object",
+            "properties": {
+                "body": {
+                    "type": "object"
+                },
+                "duration_ms": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ActivityBucket": {
+            "type": "object",
+            "properties": {
+                "at": {
+                    "description": "桶起点（UTC）",
+                    "type": "string"
+                },
+                "events": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "type": "integer"
+                },
+                "invocations": {
+                    "type": "integer"
+                },
+                "warnings": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.Admin": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "last_login_at": {
+                    "type": "string"
+                },
+                "last_login_ip": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "totp_enabled": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AuditLog": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "admin_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "detail": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AuditLogPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AuditLog"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "maxLength": 128,
+                    "minLength": 8
+                },
+                "old_password": {
+                    "type": "string",
+                    "maxLength": 128
+                }
+            }
+        },
+        "dto.ChangeUsernameRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "totp_code": {
+                    "type": "string",
+                    "maxLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 32
+                }
+            }
+        },
+        "dto.CommandField": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "bool | int | number | string | object | array",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CommandParam": {
+            "type": "object",
+            "properties": {
+                "default": {},
+                "desc": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "max_len": {
+                    "type": "integer"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "description": "bool | int | number | string | enum",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CommandSpec": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "declared": {
+                    "type": "boolean"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "devices": {
+                    "description": "目录中：支持该命令的设备（近 30 天在线过的）",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "icon": {
+                    "description": "控制台图标名（设备在命令说明里声明）",
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "module": {
+                    "type": "string"
+                },
+                "online": {
+                    "description": "目录中：当前是否有支持该命令的设备在线",
+                    "type": "boolean"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CommandParam"
+                    }
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CommandField"
+                    }
+                },
+                "timeout": {
+                    "description": "设备执行上限（秒），超过仍无结果记为结果未知；0 为默认 120",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ConfigItem": {
+            "type": "object",
+            "properties": {
+                "default": {},
+                "desc": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "max_len": {
+                    "type": "integer"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "description": "bool | int | number | string | enum",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ConfigSchema": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/dto.ConfigItem"
+                }
+            }
+        },
+        "dto.CreateAPIKeyRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "scopes"
+            ],
+            "properties": {
+                "allowed_ips": {
+                    "description": "IP 或 CIDR，为空表示不限",
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_ids": {
+                    "description": "为空表示全部设备",
+                    "type": "array",
+                    "maxItems": 1000,
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "expires_days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "scopes": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "totp_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateEnrollTicketRequest": {
+            "type": "object",
+            "required": [
+                "expires_minutes"
+            ],
+            "properties": {
+                "expires_minutes": {
+                    "type": "integer",
+                    "maximum": 10080,
+                    "minimum": 1
+                },
+                "max_uses": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64
+                }
+            }
+        },
+        "dto.CreateRepoLinkRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "password"
+            ],
+            "properties": {
+                "expires_hours": {
+                    "type": "integer",
+                    "maximum": 8760,
+                    "minimum": 0
+                },
+                "max_downloads": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "totp_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateRolloutRequest": {
+            "type": "object",
+            "required": [
+                "target"
+            ],
+            "properties": {
+                "device_ids": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "target": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "devices"
+                    ]
+                }
+            }
+        },
+        "dto.Device": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "connected_at": {
+                    "type": "string"
+                },
+                "device_uid": {
+                    "type": "string"
+                },
+                "first_seen_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "info": {
+                    "$ref": "#/definitions/dto.DeviceInfo"
+                },
+                "last_ip": {
+                    "type": "string"
+                },
+                "last_seen_at": {
+                    "type": "string"
+                },
+                "metrics": {
+                    "type": "object"
+                },
+                "metrics_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "network": {
+                    "type": "string"
+                },
+                "online": {
+                    "type": "boolean"
+                },
+                "remote_commands": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "rtt_ms": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeviceActivity": {
+            "type": "object",
+            "properties": {
+                "buckets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.ActivityBucket"
+                    }
+                },
+                "events": {
+                    "type": "integer"
+                },
+                "failed": {
+                    "description": "失败、结果未知、过期",
+                    "type": "integer"
+                },
+                "invocations": {
+                    "type": "integer"
+                },
+                "range": {
+                    "description": "24h | 7d | 30d",
+                    "type": "string"
+                },
+                "warnings": {
+                    "description": "警告与错误级别",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DeviceConfig": {
+            "type": "object",
+            "properties": {
+                "applied_version": {
+                    "description": "设备已生效的版本",
+                    "type": "integer"
+                },
+                "config": {
+                    "description": "与默认值不同的项",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "schema": {
+                    "$ref": "#/definitions/dto.ConfigSchema"
+                },
+                "status": {
+                    "description": "synced | pending | rejected",
+                    "type": "string"
+                },
+                "supported": {
+                    "type": "boolean"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "version": {
+                    "description": "期望版本，0 表示从未下发",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.DeviceInfo": {
+            "type": "object",
+            "properties": {
+                "app_version": {
+                    "description": "App 版本",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "机型标识，如 iPhone12,1",
+                    "type": "string"
+                },
+                "os": {
+                    "description": "系统版本，如 iOS 16.7.10",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeviceToken": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "token_prefix": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeviceUpdate": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invocation_id": {
+                    "type": "integer"
+                },
+                "release_id": {
+                    "type": "integer"
+                },
+                "rollout_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.DeviceUpdateInfo": {
+            "type": "object",
+            "properties": {
+                "history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DeviceUpdate"
+                    }
+                },
+                "latest": {
+                    "$ref": "#/definitions/dto.Release"
+                },
+                "supported": {
+                    "description": "设备是否开放了 system.update/install",
+                    "type": "boolean"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.EnrollTicket": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "max_uses": {
+                    "description": "0 表示不限",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token_prefix": {
+                    "type": "string"
+                },
+                "uses": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.EnrollTicketOverview": {
+            "type": "object",
+            "properties": {
+                "app_scheme": {
+                    "type": "string"
+                },
+                "path": {
+                    "description": "gateway.path",
+                    "type": "string"
+                },
+                "pin": {
+                    "description": "网关自己做 TLS 时的证书指纹（自签证书需要）；经反代时为空",
+                    "type": "string"
+                },
+                "server_url": {
+                    "description": "设备连接地址；未配置 gateway.public_url 时为空，由控制台按当前地址拼",
+                    "type": "string"
+                },
+                "tickets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.EnrollTicket"
+                    }
+                }
+            }
+        },
+        "dto.Enrollment": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device_uid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Event": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "device_ts": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "msg_id": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "object"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.EventPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Event"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.GatewayStat": {
+            "type": "object",
+            "properties": {
+                "banned_ips": {
+                    "type": "integer"
+                },
+                "connections": {
+                    "type": "integer"
+                },
+                "deny_hourly": {
+                    "description": "鉴权失败（进程内统计，重启清零）",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "rtt_hourly_ms": {
+                    "description": "平均延迟（同上）",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
+        "dto.HourCount": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "hour": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Invocation": {
+            "type": "object",
+            "properties": {
+                "api_key_id": {
+                    "type": "integer"
+                },
+                "arguments": {
+                    "type": "object"
+                },
+                "command": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "finished_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "idempotency_key": {
+                    "type": "string"
+                },
+                "module": {
+                    "type": "string"
+                },
+                "operator_id": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "object"
+                },
+                "sent_at": {
+                    "type": "string"
+                },
+                "source_ip": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InvocationPage": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Invocation"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.InvokeRequest": {
+            "type": "object",
+            "required": [
+                "command",
+                "module"
+            ],
+            "properties": {
+                "arguments": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "command": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "module": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "ttl_seconds": {
+                    "description": "设备离线时排队等待的时长（秒），0 表示用默认值，-1 表示离线直接失败。",
+                    "type": "integer",
+                    "maximum": 604800,
+                    "minimum": -1
+                },
+                "wait_seconds": {
+                    "description": "同步等待结果的时长（秒），0 表示不等待。",
+                    "type": "integer",
+                    "maximum": 60,
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.IssuedAPIKey": {
+            "type": "object",
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "key_prefix": {
+                    "type": "string"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "last_used_ip": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dto.IssuedEnrollTicket": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "max_uses": {
+                    "description": "0 表示不限",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "token_prefix": {
+                    "type": "string"
+                },
+                "uses": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.IssuedRepoLink": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "downloads": {
+                    "type": "integer"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "max_downloads": {
+                    "description": "0 表示不限",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "description": "/repo/\u003c令牌\u003e/",
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token_prefix": {
+                    "type": "string"
+                },
+                "viewable": {
+                    "description": "可再次查看地址（旧版本生成的链接没有保存令牌）",
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "totp_code": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 32
+                }
+            }
+        },
+        "dto.OTAConfig": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "public_key": {
+                    "type": "string"
+                },
+                "repo_enabled": {
+                    "description": "软件源已开启：上传时可选择同步到源",
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.OpenAPIInfo": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "description": "为空表示未配置 gateway.public_url",
+                    "type": "string"
+                },
+                "cert_pin": {
+                    "description": "服务器证书 DER 的 SHA-256（十六进制）",
+                    "type": "string"
+                },
+                "spki_pin": {
+                    "description": "SPKIPin 公钥（SubjectPublicKeyInfo）SHA-256 的 base64，即 curl --pinnedpubkey sha256//… 的值。",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Release": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "description": "各更新状态的设备数",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "in_repo": {
+                    "description": "已同步到软件源",
+                    "type": "boolean"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "sha256": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ReleaseDetail": {
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.DeviceUpdate"
+                    }
+                },
+                "release": {
+                    "$ref": "#/definitions/dto.Release"
+                },
+                "rollouts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Rollout"
+                    }
+                }
+            }
+        },
+        "dto.RepoDownload": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "firmware": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "machine": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RepoLink": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "downloads": {
+                    "type": "integer"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_used_at": {
+                    "type": "string"
+                },
+                "max_downloads": {
+                    "description": "0 表示不限",
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "revoked_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "token_prefix": {
+                    "type": "string"
+                },
+                "viewable": {
+                    "description": "可再次查看地址（旧版本生成的链接没有保存令牌）",
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.RepoLinkPath": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RepoOverview": {
+            "type": "object",
+            "properties": {
+                "base_url": {
+                    "description": "gateway.public_url，为空时由控制台用当前地址拼接",
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "latest": {
+                    "description": "源里提供的版本：同步到软件源的最新版本",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.Release"
+                        }
+                    ]
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.RepoLink"
+                    }
+                }
+            }
+        },
+        "dto.Rollout": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "device_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "release_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SetReleaseRepoRequest": {
+            "type": "object",
+            "properties": {
+                "in_repo": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.SetupRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "maxLength": 32
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 32
+                }
+            }
+        },
+        "dto.SetupStatus": {
+            "type": "object",
+            "properties": {
+                "needs_setup": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.Summary": {
+            "type": "object",
+            "properties": {
+                "alerts_24h": {
+                    "description": "warning + error",
+                    "type": "integer"
+                },
+                "avg_rtt_ms": {
+                    "description": "在线设备的平均延迟",
+                    "type": "integer"
+                },
+                "devices_online": {
+                    "type": "integer"
+                },
+                "devices_total": {
+                    "type": "integer"
+                },
+                "event_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TypeCount"
+                    }
+                },
+                "events_24h": {
+                    "type": "integer"
+                },
+                "events_hourly": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.HourCount"
+                    }
+                },
+                "events_prev_24h": {
+                    "description": "再往前 24 小时，用于环比",
+                    "type": "integer"
+                },
+                "gateway": {
+                    "$ref": "#/definitions/dto.GatewayStat"
+                },
+                "invocations_24h": {
+                    "type": "integer"
+                },
+                "invocations_done_24h": {
+                    "description": "已出结果（成功 + 失败 + 结果未知 + 过期）",
+                    "type": "integer"
+                },
+                "invocations_hourly": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "invocations_ok_24h": {
+                    "type": "integer"
+                },
+                "invocations_pending": {
+                    "description": "排队中 + 已下发未返回",
+                    "type": "integer"
+                },
+                "recent_alerts": {
+                    "description": "最近 5 条 warning / error",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Event"
+                    }
+                },
+                "server_version": {
+                    "type": "string"
+                },
+                "uptime_seconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.TOTPCodeRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TOTPSetupResponse": {
+            "type": "object",
+            "properties": {
+                "secret": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "otpauth://，可生成二维码",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "admin": {
+                    "$ref": "#/definitions/dto.Admin"
+                },
+                "expires_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TypeCount": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateAPIKeyRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "password",
+                "scopes"
+            ],
+            "properties": {
+                "allowed_ips": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "device_ids": {
+                    "type": "array",
+                    "maxItems": 1000,
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "expires_days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "scopes": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "totp_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateConfigRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    }
+                }
+            }
+        },
+        "dto.UpdateDeviceRequest": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "maxLength": 64
+                }
+            }
+        },
+        "dto.UpdateRepoLinkRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "expires_hours": {
+                    "type": "integer",
+                    "maximum": 8760,
+                    "minimum": 0
+                },
+                "max_downloads": {
+                    "type": "integer",
+                    "maximum": 10000,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64
+                }
+            }
+        },
+        "response.Body": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 进入 trust cache 后以 platform binary 身份运行（Dopamine 在 spawn 时加入 trust cache）。 -->
+    <key>platform-application</key>
+    <true/>
+
+    <!-- daemon 不能被强制放进 app 数据容器。 -->
+    <key>com.apple.private.security.no-container</key>
+    <true/>
+
+    <!-- memorystatus_control(SET_PRIORITY_PROPERTIES) 需要：launchd 对第三方 daemon
+         忽略 JetsamProperties，residentd 启动时自己提升 jetsam band（见 RKRaiseJetsamBand）。 -->
+    <key>com.apple.private.memorystatus</key>
+    <true/>
+</dict>
+</plist>

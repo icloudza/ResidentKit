@@ -1,0 +1,38 @@
+#!/bin/bash
+# 在文件被替换/删除前停止 daemon；真正卸载时注销 App。
+# dpkg 调用时 $1 = remove | upgrade | deconfigure。
+set -e
+
+if [ -n "$JBROOT" ]; then
+    :
+elif command -v jbroot >/dev/null 2>&1; then
+    JBROOT="$(jbroot)"            # RootHide
+elif [ -d /var/jb ]; then
+    JBROOT="/var/jb"              # Dopamine 及其他 rootless
+else
+    JBROOT=""                     # rootful / legacy
+fi
+# 解析成真实路径（/private/preboot/…/procursus）：plist 里写真实路径，
+# Dopamine「隐藏越狱」删掉 /var/jb 链接后 launchd 仍能拉起 daemon。
+if [ -n "$JBROOT" ]; then
+    JBROOT="$(cd "$JBROOT" && pwd -P)"
+fi
+
+PLIST="$JBROOT/Library/LaunchDaemons/com.icloudza.residentd.plist"
+APP="$JBROOT/Applications/ResidentKit.app"
+
+# 总是停止 daemon（升级时由 postinst bootstrap 新版本）。
+# bootout 会直接杀掉进程（不发 SIGTERM），daemon 来不及记录退出原因：
+# 这是有意的停止，先替它写下「正常退出」，下次启动记为 restart / upgrade（docs/events.md）。
+STATE_DIR="$JBROOT/var/lib/residentd"
+[ -d "$STATE_DIR" ] && (umask 077; printf clean > "$STATE_DIR/run.exit")
+launchctl bootout system/com.icloudza.residentd 2>/dev/null \
+    || launchctl unload "$PLIST" 2>/dev/null || true
+
+# 仅在真正卸载时注销 App 图标。必须在这里做（.app 还在）：`uicache -u <path>`
+# 需要 bundle 存在，卸载后再跑裸 `uicache` 会全量重扫（很慢）。
+if [ "$1" = "remove" ] && command -v uicache >/dev/null 2>&1 && [ -d "$APP" ]; then
+    uicache -u "$APP" 2>/dev/null || true
+fi
+
+exit 0

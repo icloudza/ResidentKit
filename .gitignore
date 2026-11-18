@@ -1,0 +1,18 @@
+# 构建产物
+.build-local/
+.theos/
+obj/
+packages/
+*.deb
+
+# 旧代码构建的过期预编译包
+prebuilt/
+
+# 本地工具
+.spec-workflow/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/

@@ -1,0 +1,26 @@
+#!/bin/bash
+# purge 时删除 daemon 的持久化状态。普通 `remove` 保留，重装后沿用用户设置。
+set -e
+
+if [ "$1" != "purge" ]; then
+    exit 0
+fi
+
+if [ -n "$JBROOT" ]; then
+    :
+elif command -v jbroot >/dev/null 2>&1; then
+    JBROOT="$(jbroot)"
+elif [ -d /var/jb ]; then
+    JBROOT="/var/jb"
+else
+    JBROOT=""
+fi
+# 解析成真实路径（/private/preboot/…/procursus）：plist 里写真实路径，
+# Dopamine「隐藏越狱」删掉 /var/jb 链接后 launchd 仍能拉起 daemon。
+if [ -n "$JBROOT" ]; then
+    JBROOT="$(cd "$JBROOT" && pwd -P)"
+fi
+
+rm -rf "$JBROOT/var/lib/residentd"
+
+exit 0

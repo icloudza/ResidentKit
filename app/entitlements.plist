@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>platform-application</key>
+    <true/>
+
+    <!-- 允许按名字查找 daemon 的全局 Mach 服务；否则沙盒 App 连不上系统 LaunchDaemon。 -->
+    <key>com.apple.security.exception.mach-lookup.global-name</key>
+    <array>
+        <string>com.icloudza.residentd.xpc</string>
+    </array>
+
+    <!-- residentd 只接受带此 entitlement 的 XPC 客户端（见 common/RKProtocol.h 的 RK_CLIENT_ENTITLEMENT）。 -->
+    <key>com.icloudza.residentd.client</key>
+    <true/>
+</dict>
+</plist>

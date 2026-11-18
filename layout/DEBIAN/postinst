@@ -1,0 +1,49 @@
+#!/bin/bash
+# 解析实际越狱根目录，修正 LaunchDaemon plist 中的路径，然后加载 daemon
+# 并注册 App。支持 rootless（Dopamine：/var/jb）和 RootHide（随机化 jbroot）。
+set -e
+
+# --- 1. 确定 JBROOT -----------------------------------------------------------
+if [ -n "$JBROOT" ]; then
+    :
+elif command -v jbroot >/dev/null 2>&1; then
+    JBROOT="$(jbroot)"
+elif [ -d /var/jb ]; then
+    JBROOT="/var/jb"
+else
+    JBROOT=""        # rootful / legacy
+fi
+# 解析成真实路径（/private/preboot/…/procursus）：plist 里写真实路径，
+# Dopamine「隐藏越狱」删掉 /var/jb 链接后 launchd 仍能拉起 daemon。
+if [ -n "$JBROOT" ]; then
+    JBROOT="$(cd "$JBROOT" && pwd -P)"
+fi
+
+PLIST="$JBROOT/Library/LaunchDaemons/com.icloudza.residentd.plist"
+
+# --- 2. 替换 @JBROOT@ 占位符 -------------------------------------------------
+if [ -f "$PLIST" ]; then
+    # rootful 下 @JBROOT@ 替换为空，路径即 /usr/libexec/residentd。
+    sed -i "s|@JBROOT@|$JBROOT|g" "$PLIST"
+    chown root:wheel "$PLIST" 2>/dev/null || true
+    chmod 644 "$PLIST"
+fi
+
+# --- 3. （重新）加载 daemon ---------------------------------------------------
+# 先按 label bootout（不依赖 plist 路径），保证升级时干净重载；忽略「未加载」。
+# Dopamine 的 launchdhook 会把 $JBROOT/Library/LaunchDaemons 加入 launchd 启动集，
+# 重新越狱后 daemon 会自动起来——这一步只负责安装/升级。
+# bootout 会直接杀掉进程（不发 SIGTERM），daemon 来不及记录退出原因：
+# 这是有意的停止，先替它写下「正常退出」，下次启动记为 restart / upgrade（docs/events.md）。
+STATE_DIR="$JBROOT/var/lib/residentd"
+[ -d "$STATE_DIR" ] && (umask 077; printf clean > "$STATE_DIR/run.exit")
+launchctl bootout system/com.icloudza.residentd 2>/dev/null || true
+launchctl bootstrap system "$PLIST" 2>/dev/null || launchctl load "$PLIST" 2>/dev/null || true
+
+# --- 4. 注册 UI App -----------------------------------------------------------
+APP="$JBROOT/Applications/ResidentKit.app"
+if command -v uicache >/dev/null 2>&1 && [ -d "$APP" ]; then
+    uicache -p "$APP" 2>/dev/null || uicache 2>/dev/null || true
+fi
+
+exit 0

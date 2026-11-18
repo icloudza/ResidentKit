@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.icloudza.residentd</string>
+
+    <!-- @JBROOT@ 由 postinst 替换为实际越狱根目录
+         （rootless 为 /var/jb，RootHide 为随机化的 jbroot）。 -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>@JBROOT@/usr/libexec/residentd</string>
+    </array>
+
+    <!-- 加载时及每次（userspace）启动时运行。 -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 常驻的核心：进程因任何原因退出，launchd 都会将其拉起，
+         使 daemon 能扛过 jetsam、崩溃和 App 生命周期事件。 -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- 注册 Mach 服务，供 UI App 按名称连接。必须与
+         common/RKProtocol.h 中的 RK_MACH_SERVICE 一致。 -->
+    <key>MachServices</key>
+    <dict>
+        <key>com.icloudza.residentd.xpc</key>
+        <true/>
+    </dict>
+
+    <key>UserName</key>
+    <string>root</string>
+
+    <!-- 故意不设 JetsamProperties：launchd 对第三方 daemon 会忽略它
+         （iOS 18 / Dopamine 实测仍是默认 band 40 / 18 MB）。改由 residentd
+         启动时自行提升 band；保留默认 18 MB 上限作为内存泄漏保护。 -->
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>JBROOT</key>
+        <string>@JBROOT@</string>
+    </dict>
+
+    <!-- 适度限制重启频率，避免反复崩溃的版本空转 CPU。
+         launchd 默认 10 秒，这里取较小值。 -->
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+</dict>
+</plist>

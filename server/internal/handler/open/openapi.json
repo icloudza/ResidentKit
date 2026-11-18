@@ -1,0 +1,736 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ResidentKit 开放 API",
+    "version": "2.0.0",
+    "description": "用 API 密钥查询设备、调用设备命令、读取事件。\n\n- 鉴权：`Authorization: Bearer rkk_…`（控制台「开放 API」页创建，按权限与设备范围授权）。\n- 命令即接口：每个设备命令是一个独立接口 `POST /devices/{id}/commands/{模块}/{命令}`，请求体就是命令参数，像 RPC 一样同步返回结果。\n- 响应：`{code, msg, data}`，`code` 为 0 表示成功，失败时配合 HTTP 状态码。\n- 并发：可任意并发调用。同一设备同时最多处理 16 条，其余按提交顺序排队。\n- 幂等：带 `Idempotency-Key` 请求头，同一密钥下相同的键只执行一次，重试返回同一结果。"
+  },
+  "servers": [
+    {
+      "url": "/open/v1"
+    }
+  ],
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "设备"
+    },
+    {
+      "name": "命令"
+    },
+    {
+      "name": "指令结果"
+    },
+    {
+      "name": "事件"
+    }
+  ],
+  "paths": {
+    "/devices": {
+      "get": {
+        "tags": [
+          "设备"
+        ],
+        "summary": "设备列表",
+        "description": "需要 devices:read。只返回密钥范围内的设备。",
+        "operationId": "listDevices",
+        "responses": {
+          "200": {
+            "description": "设备列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Device"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "密钥无效（20001）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}": {
+      "get": {
+        "tags": [
+          "设备"
+        ],
+        "summary": "设备详情",
+        "description": "需要 devices:read。",
+        "operationId": "getDevice",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "设备",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Device"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "设备不存在或不在密钥范围内（10002）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}/commands": {
+      "get": {
+        "tags": [
+          "命令"
+        ],
+        "summary": "设备可用的命令",
+        "description": "需要 devices:read。设备开放的命令及其参数、返回字段（由设备上报）。",
+        "operationId": "listDeviceCommands",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "命令列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommandSpec"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "设备不存在（10002）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/commands": {
+      "get": {
+        "tags": [
+          "命令"
+        ],
+        "summary": "命令目录",
+        "description": "需要 devices:read。密钥范围内全部设备的命令合集，devices 为支持该命令的设备。",
+        "operationId": "listCommands",
+        "responses": {
+          "200": {
+            "description": "命令目录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommandSpec"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{id}": {
+      "get": {
+        "tags": [
+          "指令结果"
+        ],
+        "summary": "查询指令结果",
+        "operationId": "getInvocation",
+        "description": "需要 commands:invoke。查询异步调用或超时调用的结果（只能查本密钥发起的）。`wait` 为长轮询秒数（0–30）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "wait",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "指令",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Invocation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "指令不存在（10002）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}/events": {
+      "get": {
+        "tags": [
+          "事件"
+        ],
+        "summary": "设备事件",
+        "description": "需要 events:read。新到旧分页。",
+        "operationId": "listEvents",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "description": "逗号分隔：info,notice,warning,error",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "事件分页",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "msg"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "example": 0
+                    },
+                    "msg": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/EventPage"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "rkk_…"
+      }
+    },
+    "parameters": {
+      "async": {
+        "name": "async",
+        "in": "query",
+        "description": "true 时立即返回（202），之后用 GET /invocations/{id} 查询结果",
+        "schema": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "timeout": {
+        "name": "timeout",
+        "in": "query",
+        "description": "同步等待结果的秒数（1–30）",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 30
+        }
+      },
+      "ttl": {
+        "name": "ttl",
+        "in": "query",
+        "description": "设备离线时排队的秒数。默认同步调用离线直接失败（409），异步调用排队 10 分钟",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 604800
+        }
+      },
+      "idem": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "description": "幂等键：字母、数字、_.:-，最长 64；同一密钥下相同的键只执行一次",
+        "schema": {
+          "type": "string",
+          "maxLength": 64
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 20001
+          },
+          "msg": {
+            "type": "string",
+            "example": "API 密钥无效、已吊销或已过期"
+          }
+        }
+      },
+      "Pending": {
+        "type": "object",
+        "properties": {
+          "invocation_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "failed",
+              "lost",
+              "expired"
+            ]
+          },
+          "device_error_code": {
+            "type": "integer"
+          }
+        }
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "device_uid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "last_ip": {
+            "type": "string"
+          },
+          "network": {
+            "type": "string"
+          },
+          "rtt_ms": {
+            "type": "integer"
+          },
+          "remote_commands": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "metrics": {
+            "type": "object"
+          },
+          "last_seen_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommandSpec": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "desc": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                },
+                "options": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "desc": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "declared": {
+            "type": "boolean",
+            "description": "设备是否提供了说明"
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "Invocation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "device_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "module": {
+            "type": "string"
+          },
+          "command": {
+            "type": "string"
+          },
+          "arguments": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "succeeded",
+              "failed",
+              "expired",
+              "lost"
+            ]
+          },
+          "result": {
+            "type": "object"
+          },
+          "error_code": {
+            "type": "integer"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "device_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "type": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "notice",
+              "warning",
+              "error"
+            ]
+          },
+          "payload": {
+            "type": "object"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EventPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

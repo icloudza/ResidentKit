@@ -1,0 +1,6 @@
+version: "2"
+linters:
+  enable: [errcheck, govet, staticcheck, ineffassign, unused, gosec, bodyclose, misspell, revive]
+  settings:
+    gosec:
+      excludes: [G104]

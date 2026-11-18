@@ -1,0 +1,9 @@
+Package: com.icloudza.residentkit
+Name: ResidentKit
+Version: 1.6.9
+Architecture: iphoneos-arm
+Description: A resident launchd daemon with a companion UI app, talking over XPC.
+Maintainer: icloudza
+Author: icloudza
+Section: Utilities
+Depends: firmware (>= 14.0)
