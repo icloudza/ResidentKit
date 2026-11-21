@@ -25,7 +25,7 @@
 业务逻辑运行在 launchd 托管的 daemon 中，App 仅作为 XPC 客户端。daemon 经 WebSocket 接入服务端，由 Web 控制台统一管理：远程指令、事件、远程配置、OTA，并提供开放 API。
 
 - **环境**：Dopamine（rootless），已验证 iPhone SE 2 / iOS 18.7.1、iPhone 14 Pro / iOS 16.1.1；支持隐藏越狱。
-- **注入**：模块如需向其他进程注入 dylib，设备须安装 ElleKit，并在 `control` 的 `Depends` 中声明 `mobilesubstrate`。
+- **注入**：模块如需向其他进程注入 dylib，设备须安装 ElleKit，并在 `control` 的 `Depends` 中声明 `mobilesubstrate`。若设备装有 Choicy 等注入管理器，需在其中放行目标进程的该 dylib，否则注入会被静默拦截。
 
 ## 组成
 

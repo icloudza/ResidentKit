@@ -25,7 +25,7 @@
 Business logic runs in a launchd-managed daemon; the app is only an XPC client. The daemon connects to the server over WebSocket, and a web console manages the fleet: remote commands, events, remote configuration, OTA updates, and an open API.
 
 - **Environment**: Dopamine (rootless), verified on iPhone SE 2 / iOS 18.7.1 and iPhone 14 Pro / iOS 16.1.1. Hidden-jailbreak mode is supported.
-- **Injection**: modules that inject a dylib into other processes require ElleKit on the device; declare `mobilesubstrate` in the `Depends` field of `control`.
+- **Injection**: modules that inject a dylib into other processes require ElleKit on the device; declare `mobilesubstrate` in the `Depends` field of `control`. If a tweak-injection manager such as Choicy is installed, allow the dylib into the target process, otherwise injection is silently blocked.
 
 ## Components
 
